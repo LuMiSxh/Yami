@@ -17,6 +17,8 @@ export const GET = (async ({ cookies, fetch }) => {
   }
   const session = JSON.parse(sessionCookie) as ISession;
 
+  console.log(session)
+
   // Fetch item manifest
   const manifestRequest = await fetch(`${PUBLIC_PATH}/api/obtain/item-manifest`);
   // Check manifestRequest
@@ -92,23 +94,28 @@ export const GET = (async ({ cookies, fetch }) => {
   }
 
   // Overlaying hash from vault
-  for (const raw_item of profileItemsData.Response.profileInventory.data.items) {
-    const item: { itemHash: number; itemInstanceId: string } = raw_item;
-    if (!(item.itemInstanceId in itemInstances)) continue;
-    itemInstances[item.itemInstanceId].hash = item.itemHash;
-    itemInstances[item.itemInstanceId].manifest = manifestData.definitions[item.itemHash];
-  }
-
-  // Overlaying hash from character inventories
-  for (const character of Object.values<{ items: { itemHash: number; itemInstanceId: string }[] }>(
-    profileItemsData.Response.characterInventories.data
-  )) {
-    for (const item of character.items) {
+  if (profileItemsData.Response.profileInventory.data.items) {
+    for (const raw_item of profileItemsData.Response.profileInventory.data.items) {
+      const item: { itemHash: number; itemInstanceId: string } = raw_item;
       if (!(item.itemInstanceId in itemInstances)) continue;
       itemInstances[item.itemInstanceId].hash = item.itemHash;
       itemInstances[item.itemInstanceId].manifest = manifestData.definitions[item.itemHash];
     }
   }
+
+  // Overlaying hash from character inventories
+  if (profileItemsData.Response.characterInventories.data) {
+    for (const character of Object.values<{ items: { itemHash: number; itemInstanceId: string }[] }>(
+      profileItemsData.Response.characterInventories.data
+    )) {
+      for (const item of character.items) {
+        if (!(item.itemInstanceId in itemInstances)) continue;
+        itemInstances[item.itemInstanceId].hash = item.itemHash;
+        itemInstances[item.itemInstanceId].manifest = manifestData.definitions[item.itemHash];
+      }
+    }
+  }
+
 
   // Overlaying hash from character equipment
   for (const character of Object.values<{ items: { itemHash: number; itemInstanceId: string }[] }>(
