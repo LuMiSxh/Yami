@@ -2,13 +2,13 @@
 	import type { LayoutData } from './$types';
 	import { onMount } from 'svelte';
 	import { error } from '@sveltejs/kit';
-	import type IAccessSession from '@interfaces/IAccessSession';
+	import type ISession from '@interfaces/ISession';
 
 	export let data: LayoutData;
 
 	// Sets the initial value for the expiry time
 	let expires_in: number = Math.floor(
-		(new Date(data['access'].access.expires_at).getTime() - new Date().getTime()) / 1000
+		(new Date(data['access'].access.expirationDate).getTime() - new Date().getTime()) / 1000
 	);
 
 	// Automatically update it when the token expired
@@ -24,14 +24,18 @@
 
 	// Function for refreshing
 	async function refresh() {
-		const response = await fetch('api/auth/token-renewal');
+		const response = await fetch('api/auth/token-renewal', {
+			method: 'POST',
+			body: JSON.stringify(data['access'])
+		});
 		if (response.status !== 200) {
-			throw error(500, response.statusText);
+			const responseError = await response.json();
+			throw error(500, { message: responseError.message, errorId: responseError.errorId });
 		}
-		const response_data = (await response.json()) as IAccessSession;
+		const response_data = (await response.json()) as ISession;
 		data = { ...response_data };
 		expires_in = Math.floor(
-			(new Date(data['access'].access.expires_at).getTime() - new Date().getTime()) / 1000
+			(new Date(data['access'].access.expirationDate).getTime() - new Date().getTime()) / 1000
 		);
 	}
 </script>

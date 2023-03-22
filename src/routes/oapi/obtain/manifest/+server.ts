@@ -2,7 +2,7 @@ import type { RequestHandler } from '@sveltejs/kit';
 import { error, json } from '@sveltejs/kit';
 import { SECRET_API_KEY } from '$env/static/private';
 import type IAccessSession from '@interfaces/IAccessSession';
-import type IManifestItemDefinition from '@interfaces/IManifestItemDefinition';
+import type IItemManifest from '@interfaces/IItemManifest';
 import type IItemManifestCookie from '@interfaces/IItemManifestCookie';
 
 // CACHE
@@ -12,11 +12,10 @@ export const GET = (async ({ cookies }) => {
 	// Getting access session
 	const access_cookie = cookies.get('AccessSession');
 	if (!access_cookie) {
-		throw error(500,
-			{
-				message: 'No access session cookie was found',
-				error_id: crypto.randomUUID()
-			});
+		throw error(500, {
+			message: 'No access session cookie was found',
+			error_id: crypto.randomUUID()
+		});
 	}
 	const access_data = JSON.parse(access_cookie) as IAccessSession;
 
@@ -28,13 +27,10 @@ export const GET = (async ({ cookies }) => {
 		}
 	});
 	if (manifest_path_response.status !== 200) {
-		throw error(
-			500,
-			{
-				message: `Something went wrong obtaining the manifest paths: '${manifest_path_response.statusText}'`,
-				error_id: crypto.randomUUID()
-			}
-		);
+		throw error(500, {
+			message: `Something went wrong obtaining the manifest paths: '${manifest_path_response.statusText}'`,
+			error_id: crypto.randomUUID()
+		});
 	}
 	const manifest_path_data = await manifest_path_response.json();
 	const manifest_version = manifest_path_data.Response.version;
@@ -57,20 +53,17 @@ export const GET = (async ({ cookies }) => {
 		}
 	);
 	if (item_manifest_response.status !== 200) {
-		throw error(
-			500,
-			{
-				message: `Something went wrong obtaining the DestinyInventoryItemLiteDefinition manifest: '${item_manifest_response.statusText}'`,
-				error_id: crypto.randomUUID()
-			}
-		);
+		throw error(500, {
+			message: `Something went wrong obtaining the DestinyInventoryItemLiteDefinition manifest: '${item_manifest_response.statusText}'`,
+			error_id: crypto.randomUUID()
+		});
 	}
 	const item_manifest_data = await item_manifest_response.json();
 
 	// Clean up the data
-	const clean_item_manifest: Record<string, IManifestItemDefinition> = {};
-	for (const [item_hash, obj] of Object.entries<IManifestItemDefinition>(item_manifest_data)) {
-		const temp_data: IManifestItemDefinition = {
+	const clean_item_manifest: Record<string, IItemManifest> = {};
+	for (const [item_hash, obj] of Object.entries<IItemManifest>(item_manifest_data)) {
+		const temp_data: IItemManifest = {
 			displayProperties: {
 				name: obj.displayProperties.name,
 				icon: 'https://bungie.net' + obj.displayProperties.icon ?? undefined

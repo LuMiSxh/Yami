@@ -1,38 +1,53 @@
 import type { LayoutServerLoad } from './$types';
 import { error, redirect } from '@sveltejs/kit';
-import { SECRET_PATH } from '$env/static/private';
+import type ISession from '@interfaces/ISession';
+import type ICharacters from '@interfaces/ICharacters';
+import type IPower from '@interfaces/IPower';
+import { PUBLIC_PATH } from '$env/static/public';
 
 export const load = (async ({ cookies, fetch }) => {
-	const access_session = cookies.get('AccessSession');
-	if (!access_session) {
-		throw redirect(303, `${SECRET_PATH}/api/auth/bungie-login`);
+	const session = cookies.get('Session');
+	if (!session) {
+		throw redirect(303, `${PUBLIC_PATH}/api/auth/login`);
 	}
 
-	if (!cookies.get('AccessSession')) {
+	if (!cookies.get('Session')) {
 		throw error(500, {
-			message: "The cookie for 'AccessSession' is not available.",
-			error_id: crypto.randomUUID()
+			message: "The cookie for 'Session ' is not available.",
+			errorId: crypto.randomUUID()
 		});
 	}
 
-	const access_request = await fetch(`${SECRET_PATH}/api/auth/token-renewal`);
-	if (access_request.status !== 200) {
-		throw error(500, { message: access_request.statusText, error_id: crypto.randomUUID() });
+	const accessRequest = await fetch(`${PUBLIC_PATH}/api/auth/token-renewal`, {
+		method: 'POST',
+		body: session
+	});
+	if (accessRequest.status !== 200) {
+		const accessError = await accessRequest.json();
+		throw error(500, { message: accessError.wessage, errorId: accessError.errorId });
 	}
 
-	const character_request = await fetch(`${SECRET_PATH}/api/obtain/characters`);
-	if (character_request.status !== 200) {
-		throw error(500, { message: character_request.statusText, error_id: crypto.randomUUID() });
+	const characterRequest = await fetch(`${PUBLIC_PATH}/api/obtain/characters`, {
+		method: 'POST',
+		body: session
+	});
+	if (characterRequest.status !== 200) {
+		const characterError = await characterRequest.json();
+		throw error(500, { message: characterError.message, errorId: characterError.errorId });
 	}
 
-	const level_request = await fetch(`${SECRET_PATH}/api/obtain/level`);
-	if (level_request.status !== 200) {
-		throw error(500, { message: level_request.statusText, error_id: crypto.randomUUID() });
+	const powerRequest = await fetch(`${PUBLIC_PATH}/api/obtain/character-power`, {
+		method: 'POST',
+		body: session
+	});
+	if (powerRequest.status !== 200) {
+		const powerError = await powerRequest.json();
+		throw error(500, { message: powerError.message, errorId: powerError.errorId });
 	}
 
 	return {
-		access: { ...(await access_request.json()) },
-		character: { ...(await character_request.json()) },
-		level: { ...(await level_request.json()) }
+		access: { ...((await accessRequest.json()) as ISession) },
+		character: { ...((await characterRequest.json()) as ICharacters) },
+		power: { ...((await powerRequest.json()) as IPower) }
 	};
 }) satisfies LayoutServerLoad;

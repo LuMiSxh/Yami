@@ -1,93 +1,74 @@
 import type { RequestHandler } from '@sveltejs/kit';
-import { SECRET_API_KEY } from '$env/static/private';
 import { error, json } from '@sveltejs/kit';
-import type IAccessSession from '@interfaces/IAccessSession';
-import type ICharacterSession from '@interfaces/ICharacterSession';
-import type { ICharacter } from '@interfaces/ICharacterSession';
+import { SECRET_API_KEY } from '$env/static/private';
+import type ICharacters from '@interfaces/ICharacters';
+import type { ICharacter } from '@interfaces/ICharacters';
+import type ISession from '@interfaces/ISession';
 
-export const GET = (async ({ cookies, fetch }) => {
-	const session_cookie = cookies.get('AccessSession');
-	const character_cookie = cookies.get('CharacterSession');
+export const POST = (async ({ request, fetch }) => {
+	// Variable declaration
+	const session = (await request.json()) as ISession;
 
-	if (!session_cookie) {
-		throw error(500, { message: 'No access session cookie exists', error_id: crypto.randomUUID() });
-	}
-
-	if (character_cookie) {
-		if (new Date(JSON.parse(character_cookie).refresh_at) < new Date()) {
-			return json(JSON.parse(character_cookie));
-		}
-	}
-
-	const session_data = JSON.parse(session_cookie) as IAccessSession;
-
-	// Retrieving the characters
-	const url = `https://bungie.net/Platform/Destiny2/${session_data.d2.type}/Profile/${session_data.d2.id}/?components=200`;
-	const character_request = await fetch(url, {
+	// Fetch characters
+	const url = `https://bungie.net/Platform/Destiny2/${session.destiny2.membershipType}/Profile/${session.destiny2.membershipId}/?components=200`;
+	const charactersRequest = await fetch(url, {
 		headers: {
-			Authorization: `Bearer ${session_data.access.token}`,
+			Authorization: `Bearer ${session.access.token}`,
 			'X-API-Key': SECRET_API_KEY
 		}
 	});
-	if (character_request.status !== 200) {
+	// Check manifestPathResponse
+	if (charactersRequest.status !== 200) {
 		throw error(500, {
-			message: `Something went wrong obtaining the Destiny2 character information: '${character_request.statusText}'`,
-			error_id: crypto.randomUUID()
+			message: `Something went wrong obtaining the Destiny2 character information: '${
+				(await charactersRequest.json()).Message
+			}'`,
+			errorId: crypto.randomUUID()
 		});
 	}
-	const character_data = await character_request.json();
+	// Extract data
+	const charactersData = await charactersRequest.json();
 
 	const refresh = new Date();
 	refresh.setDate(refresh.getDate() + 1);
 
 	// Create Data and iterate characters
-	const data: ICharacterSession = {
-		refresh_at: refresh,
+	const returnData: ICharacters = {
 		characters: []
 	};
 
-	for (const chara of Object.values(character_data.Response.characters.data)) {
-		const char = chara as {
-			characterId: string;
-			classType: number;
-			emblemPath: string;
-			emblemBackgroundPath: string;
-			emblemColor: { red: number; green: number; blue: number };
-		};
-
-		let class_name: string;
+	for (const char of Object.values<{
+		characterId: string;
+		classType: number;
+		emblemPath: string;
+		emblemBackgroundPath: string;
+		emblemColor: { red: number; green: number; blue: number };
+	}>(charactersData.Response.characters.data)) {
+		let className: 'Titan' | 'Hunter' | 'Warlock' = 'Titan';
 
 		switch (char.classType) {
 			case 0:
-				class_name = 'Titan';
+				className = 'Titan';
 				break;
 			case 1:
-				class_name = 'Hunter';
+				className = 'Hunter';
 				break;
 			case 2:
-				class_name = 'Warlock';
+				className = 'Warlock';
 				break;
-			default:
-				class_name = 'Unknown';
 		}
 
 		const character: ICharacter = {
 			id: char.characterId,
-			class: class_name,
+			class: className,
 			emblem: {
 				icon: 'https://bungie.net' + char.emblemPath,
 				background: 'https://bungie.net' + char.emblemBackgroundPath,
 				color: [char.emblemColor.red, char.emblemColor.green, char.emblemColor.blue]
 			}
 		};
-
-		data.characters.push(character);
+		returnData.characters.push(character);
 	}
 
-	cookies.set('CharacterSession', JSON.stringify(data), {
-		path: '/',
-		httpOnly: true,
-		maxAge: 14_300 // 4 hours
-	});
-	return json(data);
+	return json(returnData);
 }) satisfies RequestHandler;

@@ -8,6 +8,7 @@
 			<h1>{$page.status}</h1>
 			{#if $page.error.message}
 				<p>{$page.error.message}</p>
+				<pre>{$page.error.errorId}</pre>
 			{:else}
 				<p>An unknown error occurred</p>
 			{/if}

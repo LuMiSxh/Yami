@@ -3,9 +3,9 @@ import { error, json } from '@sveltejs/kit';
 import { SECRET_API_KEY, SECRET_PATH } from '$env/static/private';
 import type IAccessSession from '@interfaces/IAccessSession';
 import type IItemManifestCookie from '@interfaces/IItemManifestCookie';
-import type IManifestItemDefinition from '@interfaces/IManifestItemDefinition';
+import type IItemManifest from '@interfaces/IItemManifest';
 import type IItem from '@interfaces/IItem';
-import type ILevelData from '@interfaces/ILevelData';
+import type IPower from '@interfaces/IPower';
 
 // sorting function
 function power_sorter(a: IItem, b: IItem): number {
@@ -40,7 +40,7 @@ export const GET = (async ({ cookies, fetch }) => {
 	}
 	const manifest_data = (await manifest_request.json()) as IItemManifestCookie;
 
-	// Fetch all profile items
+	// Fetch all profile character-power
 	const profile_items_request = await fetch(
 		`https://bungie.net/Platform/Destiny2/${access_data.d2.type}/Profile/${access_data.d2.id}/?components=102,201,205,300`,
 		{
@@ -58,14 +58,14 @@ export const GET = (async ({ cookies, fetch }) => {
 	}
 	const profile_items_data = await profile_items_request.json();
 
-	// Collecting all items here
+	// Collecting all character-power here
 	const item_instances: Record<
 		string,
 		{
 			hash: number;
 			instance_id: string;
 			power: number;
-			manifest: IManifestItemDefinition | undefined;
+			manifest: IItemManifest | undefined;
 		}
 	> = {};
 
@@ -191,13 +191,13 @@ export const GET = (async ({ cookies, fetch }) => {
 
 		// Adding it into their respective categories
 		raw_item_collection[`${class_type}${category}`].push({
-			definition: item.manifest as IManifestItemDefinition,
+			definition: item.manifest as IItemManifest,
 			power: item.power
 		});
 	}
 
 	// Final collection
-	const data: ILevelData = {
+	const data: IPower = {
 		kinetic: raw_item_collection.kinetic.sort(power_sorter)[0],
 		energy: raw_item_collection.energy.sort(power_sorter)[0],
 		power: raw_item_collection.power.sort(power_sorter)[0],

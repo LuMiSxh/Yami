@@ -1,16 +1,16 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import type { ICharacter } from '@interfaces/ICharacterSession';
-	import type ILevelData from '@interfaces/ILevelData';
+	import type { ICharacter } from '@interfaces/ICharacters';
+	import type IPower from '@interfaces/IPower';
 
 	export let data: PageData;
 	let characters = data['character'].characters as ICharacter[];
-	let leveling = data['level'] as ILevelData;
+	let leveling = data['power'] as IPower;
 
 	let current_char = characters[0];
 	let current_char_armor;
 
-	$: current_char_armor = leveling[current_char.class];
+	$: current_char_armor = leveling[current_char.id];
 	let waiting = false;
 
 	// async button function
@@ -22,13 +22,15 @@
 
 	// Function used to refresh level details
 	async function refresh() {
-		const level_request = await fetch(`/api/obtain/level`);
+		const level_request = await fetch(`/api/obtain/character-power`, {
+			body: JSON.stringify(data['access'])
+		});
 		if (level_request.status !== 200) {
-			throw Error(level_request.statusText);
+			throw Error((await level_request.json()).message);
 		}
 
 		data = {
-			level: { ...(await level_request.json()) },
+			power: { ...(await level_request.json()) },
 			...data
 		};
 

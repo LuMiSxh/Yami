@@ -1,58 +1,55 @@
 import type { RequestHandler } from '@sveltejs/kit';
-import { SECRET_CLIENT_ID, SECRET_API_KEY, SECRET_CLIENT_SECRET } from '$env/static/private';
 import { error, json } from '@sveltejs/kit';
-import type IAccessSession from '@interfaces/IAccessSession';
+import { SECRET_API_KEY, SECRET_CLIENT_ID, SECRET_CLIENT_SECRET } from '$env/static/private';
+import type ISession from '@interfaces/ISession';
+import { addSecondsToDate } from '@lib/utils';
 
-function addSeconds(date: Date, seconds: number): Date {
-	date.setTime(date.getTime() + seconds * 1000);
-	return date;
-}
-
-export const GET = (async ({ cookies, fetch }) => {
-	const session_cookie = cookies.get('AccessSession');
-	const auth_url = 'https://www.bungie.net/Platform/App/OAuth/Token/';
-	const auth_token = btoa(`${SECRET_CLIENT_ID}:${SECRET_CLIENT_SECRET}`);
-	const current_time = new Date();
-
-	if (!session_cookie) {
-		throw error(500, { message: 'No access session cookie exists', error_id: crypto.randomUUID() });
-	}
-
-	console.warn(session_cookie);
-
-	const data: IAccessSession = JSON.parse(session_cookie) as IAccessSession;
+export const POST = (async ({ request, cookies, fetch }) => {
+	// Variable declaration
+	const session = (await request.json()) as ISession;
+	const authUrl = 'https://www.bungie.net/Platform/App/OAuth/Token/';
+	const authToken = btoa(`${SECRET_CLIENT_ID}:${SECRET_CLIENT_SECRET}`);
+	const currentDate = new Date();
 
 	// Only renew if token expired
-	if (current_time < new Date(data.access.expires_at)) {
-		return json(data);
+	if (currentDate < new Date(session.access.expirationDate)) {
+		return json(session);
 	}
 
-	// Retrieving the new access token
-	const access_request = await fetch(auth_url, {
+	// If refresh token expired, error
+	if (currentDate > new Date(session.refresh.expirationDate)) {
+		throw error(500, { message: 'The refresh token has expired', errorId: crypto.randomUUID() });
+	}
+
+	// Fetch new access token
+	const accessRequest = await fetch(authUrl, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/x-www-form-urlencoded',
-			Authorization: `Basic ${auth_token}`,
+			Authorization: `Basic ${authToken}`,
 			'X-API-Key': SECRET_API_KEY
 		},
-		body: `grant_type=refresh_token&refresh_token=${JSON.parse(session_cookie).refresh.token}`
+		body: `grant_type=refresh_token&refresh_token=${session.refresh.token}`
 	});
-	if (access_request.status !== 200) {
+	// Check accessRequest
+	if (accessRequest.status !== 200) {
 		throw error(500, {
-			message: `Something went wrong refreshing the bungie access token: '${access_request.statusText}'`,
-			error_id: crypto.randomUUID()
+			message: `Something went wrong refreshing the bungie access token: '${accessRequest.statusText}'`,
+			errorId: crypto.randomUUID()
 		});
 	}
-	const access_data = await access_request.json();
+	// Extract data
+	const accessData = await accessRequest.json();
 
-	data.access.expires_at = addSeconds(new Date(), access_data.expires_in);
-	data.refresh.expires_at = addSeconds(new Date(), access_data.refresh_expires_in);
+	// Set new data
+	session.access.expirationDate = addSecondsToDate(new Date(), accessData.expires_in);
+	session.refresh.expirationDate = addSecondsToDate(new Date(), accessData.refresh_expires_in);
 
-	cookies.set('AccessSession', JSON.stringify(data), {
+	cookies.set('Session', JSON.stringify(session), {
 		path: '/',
 		httpOnly: true,
-		maxAge: access_data.refresh_expires_in
+		maxAge: accessData.refresh_expires_in
 	});
 
-	return json(data);
+	return json(session);
 }) satisfies RequestHandler;

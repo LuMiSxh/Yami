@@ -1,24 +1,36 @@
 import * as SentryNode from '@sentry/node';
 import '@sentry/tracing';
 import type { HandleServerError } from '@sveltejs/kit';
+import { PUBLIC_ENV, PUBLIC_SENTRY_DSN } from '$env/static/public';
+import * as SentrySvelte from '@sentry/svelte';
 
 SentryNode.init({
-	dsn: 'https://9f9edafcec2b4866a51f266e6cd9e613@o4504882910003200.ingest.sentry.io/4504882914066433',
+	dsn: PUBLIC_SENTRY_DSN,
 	tracesSampleRate: 1.0,
 	// Add the Http integration for tracing
 	integrations: [new SentryNode.Integrations.Http()]
 });
 
-SentryNode.setTag('svelteKit', 'server');
+SentryNode.setTag('SvelteKit', 'Browser');
 
-// use handleError to report errors during server-side data loading
 export const handleError = (({ error, event }) => {
-	const error_id = crypto.randomUUID();
+	const errorId = crypto.randomUUID();
 
-	SentryNode.captureException(error, {contexts: {Sveltekit: {event}}, extra: {errorId: { error_id }}});
+	if (PUBLIC_ENV === 'dev') {
+		SentrySvelte.setTag('ENV', 'Dev');
+	} else {
+		SentryNode.setTag('ENV', 'Prod');
+	}
+
+	SentryNode.setTag('Error ID', errorId);
+
+	SentryNode.captureException(error, {
+		contexts: { Sveltekit: { event } },
+		tags: { errorId: errorId }
+	});
 
 	return {
 		message: (error as { message: string }).message,
-		error_id
+		errorId: errorId
 	};
 }) satisfies HandleServerError;

@@ -6,7 +6,7 @@ declare namespace App {
 	// interface PageData {}
 	interface Error {
 		message: string;
-		error_id: string;
+		errorId: string;
 	}
 	// interface Platform {}
 }

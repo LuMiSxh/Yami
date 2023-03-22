@@ -1,4 +1,4 @@
-interface IManifestItemDefinition {
+export interface IItemManifestDefinition {
 	displayProperties: {
 		name: string;
 		icon: string | undefined;
@@ -12,4 +12,9 @@ interface IManifestItemDefinition {
 	classType: number;
 }
 
-export default IManifestItemDefinition;
+interface IItemManifest {
+	version: string;
+	definitions: Record<string, IItemManifestDefinition>;
+}
+
+export default IItemManifest;

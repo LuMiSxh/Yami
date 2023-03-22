@@ -1,7 +1,7 @@
-import type IManifestItemDefinition from '@interfaces/IManifestItemDefinition';
+import type { IItemManifestDefinition } from '@interfaces/IItemManifest';
 
 interface IItem {
-	definition: IManifestItemDefinition;
+	definition: IItemManifestDefinition;
 	power: number;
 }
 
