@@ -7,10 +7,10 @@
 	let characters = data['character'].characters as ICharacter[];
 	let leveling = data['power'] as IPower;
 
-	let current_char = characters[0];
+	let current_char: ICharacter = characters[0];
 	let current_char_armor;
 
-	$: current_char_armor = leveling[current_char.id];
+	$: current_char_armor = leveling.Armor[current_char.id];
 	let waiting = false;
 
 	// async button function
@@ -22,9 +22,7 @@
 
 	// Function used to refresh level details
 	async function refresh() {
-		const level_request = await fetch(`/api/obtain/character-power`, {
-			body: JSON.stringify(data['access'])
-		});
+		const level_request = await fetch(`/api/obtain/character-power`);
 		if (level_request.status !== 200) {
 			throw Error((await level_request.json()).message);
 		}

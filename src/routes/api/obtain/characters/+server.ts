@@ -5,9 +5,13 @@ import type ICharacters from '@interfaces/ICharacters';
 import type { ICharacter } from '@interfaces/ICharacters';
 import type ISession from '@interfaces/ISession';
 
-export const POST = (async ({ request, fetch }) => {
+export const GET = (async ({ cookies, fetch }) => {
 	// Variable declaration
-	const session = (await request.json()) as ISession;
+	const sessionCookie = cookies.get("Session");
+	if (!sessionCookie) {
+		throw error(500, { message: "No session cookie was found", errorId: crypto.randomUUID() });
+	}
+	const session = JSON.parse(sessionCookie) as ISession;
 
 	// Fetch characters
 	const url = `https://bungie.net/Platform/Destiny2/${session.destiny2.membershipType}/Profile/${session.destiny2.membershipId}/?components=200`;
@@ -17,11 +21,11 @@ export const POST = (async ({ request, fetch }) => {
 			'X-API-Key': SECRET_API_KEY
 		}
 	});
-	// Check manifestPathResponse
+	// Check charactersRequest
 	if (charactersRequest.status !== 200) {
 		throw error(500, {
 			message: `Something went wrong obtaining the Destiny2 character information: '${
-				(await charactersRequest.json()).Message
+				(await charactersRequest.json()).Message ?? charactersRequest.statusText
 			}'`,
 			errorId: crypto.randomUUID()
 		});

@@ -8,7 +8,7 @@
 
 	// Sets the initial value for the expiry time
 	let expires_in: number = Math.floor(
-		(new Date(data['access'].access.expirationDate).getTime() - new Date().getTime()) / 1000
+		(new Date(data['session'].access.expirationDate).getTime() - new Date().getTime()) / 1000
 	);
 
 	// Automatically update it when the token expired
@@ -24,10 +24,7 @@
 
 	// Function for refreshing
 	async function refresh() {
-		const response = await fetch('api/auth/token-renewal', {
-			method: 'POST',
-			body: JSON.stringify(data['access'])
-		});
+		const response = await fetch('api/auth/token-renewal');
 		if (response.status !== 200) {
 			const responseError = await response.json();
 			throw error(500, { message: responseError.message, errorId: responseError.errorId });
@@ -35,7 +32,7 @@
 		const response_data = (await response.json()) as ISession;
 		data = { ...response_data };
 		expires_in = Math.floor(
-			(new Date(data['access'].access.expirationDate).getTime() - new Date().getTime()) / 1000
+			(new Date(data['session'].access.expirationDate).getTime() - new Date().getTime()) / 1000
 		);
 	}
 </script>

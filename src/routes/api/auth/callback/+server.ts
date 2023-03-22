@@ -33,7 +33,7 @@ export const GET = (async ({ url, cookies, fetch }) => {
 	if (accessRequest.status !== 200) {
 		throw error(500, {
 			message: `Something went wrong obtaining the bungie access token: '${
-				(await accessRequest.json()).Message
+				(await accessRequest.json()).Message ?? accessRequest.statusText
 			}'`,
 			errorId: crypto.randomUUID()
 		});
@@ -52,7 +52,7 @@ export const GET = (async ({ url, cookies, fetch }) => {
 	if (bnetResponse.status !== 200) {
 		throw error(500, {
 			message: `Something went wrong obtaining the Bungie.net user information: '${
-				(await bnetResponse.json()).Message
+				(await bnetResponse.json()).Message ?? bnetResponse.statusText
 			}'`,
 			errorId: crypto.randomUUID()
 		});
@@ -72,7 +72,7 @@ export const GET = (async ({ url, cookies, fetch }) => {
 	if (d2Response.status !== 200) {
 		throw error(500, {
 			message: `Something went wrong obtaining the Destiny 2 user information: '${
-				(await d2Response.json()).Message
+				(await d2Response.json()).Message ?? d2Response.statusText
 			}'`,
 			errorId: crypto.randomUUID()
 		});

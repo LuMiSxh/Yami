@@ -4,9 +4,14 @@ import { SECRET_API_KEY, SECRET_CLIENT_ID, SECRET_CLIENT_SECRET } from '$env/sta
 import type ISession from '@interfaces/ISession';
 import { addSecondsToDate } from '@lib/utils';
 
-export const POST = (async ({ request, cookies, fetch }) => {
+export const GET = (async ({ cookies, fetch }) => {
 	// Variable declaration
-	const session = (await request.json()) as ISession;
+	const sessionCookie = cookies.get("Session");
+	if (!sessionCookie) {
+		throw error(500, { message: "No session cookie was found", errorId: crypto.randomUUID() });
+	}
+	const session = JSON.parse(sessionCookie) as ISession;
+
 	const authUrl = 'https://www.bungie.net/Platform/App/OAuth/Token/';
 	const authToken = btoa(`${SECRET_CLIENT_ID}:${SECRET_CLIENT_SECRET}`);
 	const currentDate = new Date();
@@ -34,7 +39,7 @@ export const POST = (async ({ request, cookies, fetch }) => {
 	// Check accessRequest
 	if (accessRequest.status !== 200) {
 		throw error(500, {
-			message: `Something went wrong refreshing the bungie access token: '${accessRequest.statusText}'`,
+			message: `Something went wrong refreshing the bungie access token: '${(await accessRequest.json()).Message ?? accessRequest.statusText}'`,
 			errorId: crypto.randomUUID()
 		});
 	}

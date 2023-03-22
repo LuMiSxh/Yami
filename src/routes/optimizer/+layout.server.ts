@@ -18,35 +18,26 @@ export const load = (async ({ cookies, fetch }) => {
 		});
 	}
 
-	const accessRequest = await fetch(`${PUBLIC_PATH}/api/auth/token-renewal`, {
-		method: 'POST',
-		body: session
-	});
-	if (accessRequest.status !== 200) {
-		const accessError = await accessRequest.json();
-		throw error(500, { message: accessError.wessage, errorId: accessError.errorId });
+	const sessionRequest = await fetch(`${PUBLIC_PATH}/api/auth/token-renewal`);
+	if (sessionRequest.status !== 200) {
+		const sessionError = await sessionRequest.json();
+		throw error(500, { message: sessionError.wessage, errorId: sessionError.errorId });
 	}
 
-	const characterRequest = await fetch(`${PUBLIC_PATH}/api/obtain/characters`, {
-		method: 'POST',
-		body: session
-	});
+	const characterRequest = await fetch(`${PUBLIC_PATH}/api/obtain/characters`);
 	if (characterRequest.status !== 200) {
 		const characterError = await characterRequest.json();
 		throw error(500, { message: characterError.message, errorId: characterError.errorId });
 	}
 
-	const powerRequest = await fetch(`${PUBLIC_PATH}/api/obtain/character-power`, {
-		method: 'POST',
-		body: session
-	});
+	const powerRequest = await fetch(`${PUBLIC_PATH}/api/obtain/character-power`);
 	if (powerRequest.status !== 200) {
 		const powerError = await powerRequest.json();
 		throw error(500, { message: powerError.message, errorId: powerError.errorId });
 	}
 
 	return {
-		access: { ...((await accessRequest.json()) as ISession) },
+		session: { ...((await sessionRequest.json()) as ISession) },
 		character: { ...((await characterRequest.json()) as ICharacters) },
 		power: { ...((await powerRequest.json()) as IPower) }
 	};
