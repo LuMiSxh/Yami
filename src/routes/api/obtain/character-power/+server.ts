@@ -66,6 +66,10 @@ export const GET = (async ({ cookies, fetch }) => {
   // Extract data
   const profileItemsData = await profileItemsRequest.json();
 
+
+  // DEBUG: VERCEL
+  console.warn(profileItemsData)
+
   // Collecting all character-power here
   const itemInstances: Record<
     string,
@@ -271,7 +275,7 @@ export const GET = (async ({ cookies, fetch }) => {
     Armor: tempArmorData
   };
 
-  console.log(returnData)
+  console.warn(returnData)
 
   return json(returnData);
 }) satisfies RequestHandler;
