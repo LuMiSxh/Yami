@@ -1,6 +1,6 @@
 <script lang="ts">
 	// Skeleton setup
-	import 'shared/theme-lightblue.pcss';
+	import '../theme-lightblue.pcss';
 	import '@skeletonlabs/skeleton/styles/all.css';
 	import '../app.postcss';
 
