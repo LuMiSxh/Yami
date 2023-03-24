@@ -18,7 +18,7 @@ export const GET = (async ({ cookies, fetch }) => {
 	const currentDate = new Date();
 
 	// Only renew if token expired or 5 minutes before
-	if (currentDate < new Date(session.access.expirationDate)) {
+	if (addSecondsToDate(currentDate, 3600) < new Date(session.access.expirationDate)) {
 		return json(session);
 	}
 
