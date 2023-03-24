@@ -3,8 +3,7 @@
 	"short_name": "Yami",
 	"theme_color": "#181414",
 	"background_color": "#181414",
-	"display": "fullScreen",
-	"orientation": "",
+	"display": "standalone",
 	"scope": "/",
 	"start_url": "/",
 	"icons": [

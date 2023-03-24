@@ -13,11 +13,11 @@ export const GET = (async ({ cookies, fetch }) => {
 	}
 	const session = JSON.parse(sessionCookie) as ISession;
 
-	const authUrl = `${PUBLIC_API_ROOT}/Platform/App/OAuth/Token/`;
+	const authUrl = `${PUBLIC_API_ROOT}/App/OAuth/Token/`;
 	const authToken = btoa(`${SECRET_CLIENT_ID}:${SECRET_CLIENT_SECRET}`);
 	const currentDate = new Date();
 
-	// Only renew if token expired
+	// Only renew if token expired or 5 minutes before
 	if (currentDate < new Date(session.access.expirationDate)) {
 		return json(session);
 	}
@@ -40,9 +40,7 @@ export const GET = (async ({ cookies, fetch }) => {
 	// Check accessRequest
 	if (accessRequest.status !== 200) {
 		throw error(500, {
-			message: `Something went wrong refreshing the bungie access token: '${
-				(await accessRequest.json()).Message ?? accessRequest.statusText
-			}'`,
+			message: `Something went wrong refreshing the bungie access token: '${accessRequest.statusText}'`,
 			errorId: crypto.randomUUID()
 		});
 	}

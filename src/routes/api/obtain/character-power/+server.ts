@@ -64,9 +64,7 @@ export const GET = (async ({ fetch }) => {
 	if (profileItemsRequest.status !== 200) {
 		console.log(await profileItemsRequest.text());
 		throw error(500, {
-			message: `Something went wrong obtaining the items from your Destiny 2 profile: '${
-				(await profileItemsRequest.json()).Message ?? profileItemsRequest.statusText
-			}'`,
+			message: `Something went wrong obtaining the items from your Destiny 2 profile: '${profileItemsRequest.statusText}'`,
 			errorId: crypto.randomUUID()
 		});
 	}

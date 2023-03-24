@@ -5,9 +5,6 @@ import type { IItemManifestDefinition } from '@interfaces/IItemManifest';
 import { SECRET_API_KEY } from '$env/static/private';
 import { PUBLIC_API_ROOT } from '$env/static/public';
 
-// CACHE
-let cached_manifest: IItemManifest | undefined;
-
 export const GET = (async () => {
 	// Fetch manifest paths
 	const manifestPathRequest = await fetch(`${PUBLIC_API_ROOT}/Destiny2/Manifest/`, {
@@ -18,22 +15,13 @@ export const GET = (async () => {
 	// Check manifestPathRequest
 	if (manifestPathRequest.status !== 200) {
 		throw error(500, {
-			message: `Something went wrong obtaining the manifest paths: '${
-				(await manifestPathRequest.json()).Message ?? manifestPathRequest.statusText
-			}'`,
+			message: `Something went wrong obtaining the manifest paths: '${manifestPathRequest.statusText}'`,
 			errorId: crypto.randomUUID()
 		});
 	}
 	// Extract data
 	const manifestPathData = await manifestPathRequest.json();
 	const manifestVersion = manifestPathData.Response.version;
-
-	// If manifest in cache and version is the same, return the manifest from cache
-	if (cached_manifest) {
-		if (cached_manifest.version === manifestVersion) {
-			return json(cached_manifest);
-		}
-	}
 
 	// Fetch item manifest
 	const itemManifestRequest = await fetch(
@@ -47,9 +35,7 @@ export const GET = (async () => {
 	// Check itemManifestResponse
 	if (itemManifestRequest.status !== 200) {
 		throw error(500, {
-			message: `Something went wrong obtaining the DestinyInventoryItemLiteDefinition manifest: '${
-				(await itemManifestRequest.json()).Message ?? itemManifestRequest.statusText
-			}'`,
+			message: `Something went wrong obtaining the DestinyInventoryItemLiteDefinition manifest: '${itemManifestRequest.statusText}'`,
 			errorId: crypto.randomUUID()
 		});
 	}
@@ -82,9 +68,6 @@ export const GET = (async () => {
 		version: manifestVersion,
 		definitions: cleanManifest
 	};
-
-	// Set cache
-	cached_manifest = returnData;
 
 	return json(returnData);
 }) satisfies RequestHandler;

@@ -21,19 +21,19 @@ export const GET = (async ({ fetch }) => {
 	const session = (await sessionRequest.json()) as ISession;
 
 	// Fetch characters
-	const url = `${PUBLIC_API_ROOT}/Destiny2/${session.destiny2.membershipType}/Profile/${session.destiny2.membershipId}/?components=200`;
-	const charactersRequest = await fetch(url, {
-		headers: {
-			Authorization: `Bearer ${session.access.token}`,
-			'X-API-Key': SECRET_API_KEY
+	const charactersRequest = await fetch(
+		`${PUBLIC_API_ROOT}/Destiny2/${session.destiny2.membershipType}/Profile/${session.destiny2.membershipId}/?components=200`,
+		{
+			headers: {
+				Authorization: `Bearer ${session.access.token}`,
+				'X-API-Key': SECRET_API_KEY
+			}
 		}
-	});
+	);
 	// Check charactersRequest
 	if (charactersRequest.status !== 200) {
 		throw error(500, {
-			message: `Something went wrong obtaining the Destiny2 character information: '${
-				(await charactersRequest.json()).Message ?? charactersRequest.statusText
-			}'`,
+			message: `Something went wrong obtaining the Destiny2 character information: '${charactersRequest.statusText}'`,
 			errorId: crypto.randomUUID()
 		});
 	}
