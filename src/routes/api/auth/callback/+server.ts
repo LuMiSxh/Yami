@@ -1,8 +1,8 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { error, redirect } from '@sveltejs/kit';
-import { SECRET_API_KEY, SECRET_CLIENT_ID, SECRET_CLIENT_SECRET } from '$env/static/private';
-import type ISession from '@interfaces/ISession';
 import { addSecondsToDate } from '@lib/utils';
+import type ISession from '@interfaces/ISession';
+import { SECRET_API_KEY, SECRET_CLIENT_ID, SECRET_CLIENT_SECRET } from '$env/static/private';
 
 export const GET = (async ({ url, cookies, fetch }) => {
 	// Variable declaration

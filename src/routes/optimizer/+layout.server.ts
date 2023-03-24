@@ -11,19 +11,6 @@ export const load = (async ({ cookies, fetch }) => {
 		throw redirect(303, `${PUBLIC_PATH}/api/auth/login`);
 	}
 
-	if (!cookies.get('Session')) {
-		throw error(500, {
-			message: "The cookie for 'Session ' is not available.",
-			errorId: crypto.randomUUID()
-		});
-	}
-
-	const sessionRequest = await fetch(`${PUBLIC_PATH}/api/auth/token-renewal`);
-	if (sessionRequest.status !== 200) {
-		const sessionError = await sessionRequest.json();
-		throw error(500, { message: sessionError.wessage, errorId: sessionError.errorId });
-	}
-
 	const characterRequest = await fetch(`${PUBLIC_PATH}/api/obtain/characters`);
 	if (characterRequest.status !== 200) {
 		const characterError = await characterRequest.json();
@@ -37,7 +24,7 @@ export const load = (async ({ cookies, fetch }) => {
 	}
 
 	return {
-		session: { ...((await sessionRequest.json()) as ISession) },
+		session: { ...(JSON.parse(session) as ISession) },
 		character: { ...((await characterRequest.json()) as ICharacters) },
 		power: { ...((await powerRequest.json()) as IPower) }
 	};

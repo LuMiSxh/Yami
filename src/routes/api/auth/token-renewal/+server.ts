@@ -1,18 +1,19 @@
 import type { RequestHandler } from '@sveltejs/kit';
-import { error, json } from '@sveltejs/kit';
-import { SECRET_API_KEY, SECRET_CLIENT_ID, SECRET_CLIENT_SECRET } from '$env/static/private';
-import type ISession from '@interfaces/ISession';
 import { addSecondsToDate } from '@lib/utils';
+import { error, json } from '@sveltejs/kit';
+import type ISession from '@interfaces/ISession';
+import { SECRET_API_KEY, SECRET_CLIENT_ID, SECRET_CLIENT_SECRET } from '$env/static/private';
+import { PUBLIC_API_ROOT } from '$env/static/public';
 
 export const GET = (async ({ cookies, fetch }) => {
 	// Variable declaration
-	const sessionCookie = cookies.get("Session");
+	const sessionCookie = cookies.get('Session');
 	if (!sessionCookie) {
-		throw error(500, { message: "No session cookie was found", errorId: crypto.randomUUID() });
+		throw error(500, { message: 'No session cookie was found', errorId: crypto.randomUUID() });
 	}
 	const session = JSON.parse(sessionCookie) as ISession;
 
-	const authUrl = 'https://www.bungie.net/Platform/App/OAuth/Token/';
+	const authUrl = `${PUBLIC_API_ROOT}/Platform/App/OAuth/Token/`;
 	const authToken = btoa(`${SECRET_CLIENT_ID}:${SECRET_CLIENT_SECRET}`);
 	const currentDate = new Date();
 
@@ -39,7 +40,9 @@ export const GET = (async ({ cookies, fetch }) => {
 	// Check accessRequest
 	if (accessRequest.status !== 200) {
 		throw error(500, {
-			message: `Something went wrong refreshing the bungie access token: '${(await accessRequest.json()).Message ?? accessRequest.statusText}'`,
+			message: `Something went wrong refreshing the bungie access token: '${
+				(await accessRequest.json()).Message ?? accessRequest.statusText
+			}'`,
 			errorId: crypto.randomUUID()
 		});
 	}

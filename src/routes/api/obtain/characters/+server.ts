@@ -1,20 +1,27 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { error, json } from '@sveltejs/kit';
-import { SECRET_API_KEY } from '$env/static/private';
 import type ICharacters from '@interfaces/ICharacters';
 import type { ICharacter } from '@interfaces/ICharacters';
 import type ISession from '@interfaces/ISession';
+import { SECRET_API_KEY } from '$env/static/private';
+import { PUBLIC_API_ROOT, PUBLIC_PATH } from '$env/static/public';
 
-export const GET = (async ({ cookies, fetch }) => {
-	// Variable declaration
-	const sessionCookie = cookies.get("Session");
-	if (!sessionCookie) {
-		throw error(500, { message: "No session cookie was found", errorId: crypto.randomUUID() });
+export const GET = (async ({ fetch }) => {
+	// Fetch session
+	const sessionRequest = await fetch(`${PUBLIC_PATH}/api/auth/token-renewal`);
+	// Check sessionRequest
+	if (sessionRequest.status !== 200) {
+		const sessionError = await sessionRequest.json();
+		throw error(500, {
+			message: sessionError.message,
+			errorId: sessionError.errorId
+		});
 	}
-	const session = JSON.parse(sessionCookie) as ISession;
+	// Extract data
+	const session = (await sessionRequest.json()) as ISession;
 
 	// Fetch characters
-	const url = `https://bungie.net/Platform/Destiny2/${session.destiny2.membershipType}/Profile/${session.destiny2.membershipId}/?components=200`;
+	const url = `${PUBLIC_API_ROOT}/Destiny2/${session.destiny2.membershipType}/Profile/${session.destiny2.membershipId}/?components=200`;
 	const charactersRequest = await fetch(url, {
 		headers: {
 			Authorization: `Bearer ${session.access.token}`,
