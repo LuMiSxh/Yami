@@ -4,11 +4,13 @@
 
 	const information = [
 		'Loading Profile...',
+		'Obtaining Characters...',
+		'Obtaining Items...',
 		'Loading Manifest...',
-		'Loading Items...',
-		'Loading Items...',
-		'Loading Items...',
-		'Loading takes longer than usual...'
+		'Starting Service-Worker...',
+		'Starting Service-Worker...',
+		'Caching Data...',
+		'This takes longer than usual...'
 	];
 
 	let index = 0;
@@ -24,7 +26,7 @@
 				index += 1;
 				selected = information[index];
 			}
-		}, 2000);
+		}, 1200);
 	});
 
 	onDestroy(() => {

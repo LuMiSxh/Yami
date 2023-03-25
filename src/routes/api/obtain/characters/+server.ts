@@ -17,6 +17,7 @@ export const GET = (async ({ fetch }) => {
 			errorId: sessionError.errorId
 		});
 	}
+
 	// Extract data
 	const session = (await sessionRequest.json()) as ISession;
 

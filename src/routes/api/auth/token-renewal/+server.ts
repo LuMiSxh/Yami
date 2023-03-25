@@ -1,9 +1,9 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { addSecondsToDate } from '@lib/utils';
-import { error, json } from '@sveltejs/kit';
+import { error, json, redirect } from '@sveltejs/kit';
 import type ISession from '@interfaces/ISession';
 import { SECRET_API_KEY, SECRET_CLIENT_ID, SECRET_CLIENT_SECRET } from '$env/static/private';
-import { PUBLIC_API_ROOT } from '$env/static/public';
+import { PUBLIC_API_ROOT, PUBLIC_PATH } from '$env/static/public';
 
 export const GET = (async ({ cookies, fetch }) => {
 	// Variable declaration
@@ -15,16 +15,15 @@ export const GET = (async ({ cookies, fetch }) => {
 
 	const authUrl = `${PUBLIC_API_ROOT}/App/OAuth/Token/`;
 	const authToken = btoa(`${SECRET_CLIENT_ID}:${SECRET_CLIENT_SECRET}`);
-	const currentDate = new Date();
 
 	// Only renew if token expired or 5 minutes before
-	if (addSecondsToDate(currentDate, 3600) < new Date(session.access.expirationDate)) {
+	if (addSecondsToDate(new Date(), 3600) < new Date(session.access.expirationDate)) {
 		return json(session);
 	}
 
-	// If refresh token expired, error
-	if (currentDate > new Date(session.refresh.expirationDate)) {
-		throw error(500, { message: 'The refresh token has expired', errorId: crypto.randomUUID() });
+	// If refresh token expired (or expires in next 5 minutes, redirect to login page
+	if (addSecondsToDate(new Date(), 3600) > new Date(session.refresh.expirationDate)) {
+		throw redirect(303, `${PUBLIC_PATH}/api/auth/login`);
 	}
 
 	// Fetch new access token
@@ -47,15 +46,24 @@ export const GET = (async ({ cookies, fetch }) => {
 	// Extract data
 	const accessData = await accessRequest.json();
 
-	// Set new data
-	session.access.expirationDate = addSecondsToDate(new Date(), accessData.expires_in);
-	session.refresh.expirationDate = addSecondsToDate(new Date(), accessData.refresh_expires_in);
+	// Build new return data
+	const returnData: ISession = {
+		...session,
+		access: {
+			token: accessData.access_token,
+			expirationDate: addSecondsToDate(new Date(), accessData.expires_in)
+		},
+		refresh: {
+			token: accessData.refresh_token,
+			expirationDate: addSecondsToDate(new Date(), accessData.refresh_expires_in)
+		}
+	};
 
-	cookies.set('Session', JSON.stringify(session), {
+	cookies.set('Session', JSON.stringify(returnData), {
 		path: '/',
 		httpOnly: true,
 		maxAge: accessData.refresh_expires_in
 	});
 
-	return json(session);
+	return json(returnData);
 }) satisfies RequestHandler;

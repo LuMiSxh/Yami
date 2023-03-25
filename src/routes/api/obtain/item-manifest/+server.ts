@@ -1,5 +1,5 @@
 import type { RequestHandler } from '@sveltejs/kit';
-import { error, json } from '@sveltejs/kit';
+import { error, json, redirect } from '@sveltejs/kit';
 import type IItemManifest from '@interfaces/IItemManifest';
 import type { IItemManifestDefinition } from '@interfaces/IItemManifest';
 import { SECRET_API_KEY } from '$env/static/private';
