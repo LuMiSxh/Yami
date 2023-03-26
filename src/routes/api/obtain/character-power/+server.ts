@@ -1,14 +1,14 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { error, json } from '@sveltejs/kit';
-import type IItemManifest from '@interfaces/IItemManifest';
-import type { IItemManifestDefinition } from '@interfaces/IItemManifest';
-import type IItem from '@interfaces/IItem';
-import type ISession from '@interfaces/ISession';
-import type ICharacters from '@interfaces/ICharacters';
-import type IPower from '@interfaces/IPower';
-import { powerSorter } from '@lib/utils';
+import type IItemManifest from '$interfaces/destiny/manifest/IItemManifest';
+import type IItem from '$interfaces/extensions/IItem';
+import type ISession from '$interfaces/ISession';
+import type ICharacter from '$interfaces/destiny/ICharacter';
+import type IPower from '$interfaces/IPower';
+import { powerSorter } from '$lib/utils';
 import { SECRET_API_KEY } from '$env/static/private';
 import { PUBLIC_API_ROOT, PUBLIC_PATH } from '$env/static/public';
+import type IResponse from '$interfaces/IResponse';
 
 export const GET = (async ({ fetch }) => {
 	// Fetch session
@@ -22,10 +22,12 @@ export const GET = (async ({ fetch }) => {
 		});
 	}
 	// Extract data
-	const session = (await sessionRequest.json()) as ISession;
+	const session = (await sessionRequest.json()).data as ISession;
 
 	// Fetch item manifest
-	const manifestRequest = await fetch(`${PUBLIC_PATH}/api/obtain/item-manifest`);
+	const manifestRequest = await fetch(
+		`${PUBLIC_PATH}/api/obtain/manifest?manifest=DestinyInventoryItemLiteDefinition`
+	);
 	// Check manifestRequest
 	if (manifestRequest.status !== 200) {
 		const manifestError = await manifestRequest.json();
@@ -35,7 +37,7 @@ export const GET = (async ({ fetch }) => {
 		});
 	}
 	// Extract data
-	const manifestData = (await manifestRequest.json()) as IItemManifest;
+	const manifestData = (await manifestRequest.json()) as IResponse<Record<string, IItemManifest>>;
 
 	// Fetch characters
 	const charactersRequest = await fetch(`${PUBLIC_PATH}/api/obtain/characters`);
@@ -48,7 +50,7 @@ export const GET = (async ({ fetch }) => {
 		});
 	}
 	// Extract data
-	const characterData = (await charactersRequest.json()) as ICharacters;
+	const characterData = (await charactersRequest.json()) as IResponse<ICharacter[]>;
 
 	// Fetch profile character-power
 	const profileItemsRequest = await fetch(
@@ -86,7 +88,7 @@ export const GET = (async ({ fetch }) => {
 			hash: number;
 			instance_id: string;
 			power: number;
-			manifest: IItemManifestDefinition | undefined;
+			manifest: IItemManifest | undefined;
 		}
 	> = {};
 
@@ -109,9 +111,9 @@ export const GET = (async ({ fetch }) => {
 	// Overlaying hash from vault
 	for (const raw_item of profileItemsData.Response.profileInventory.data.items) {
 		const item: { itemHash: number; itemInstanceId: string } = raw_item;
-		if (!(item.itemInstanceId in itemInstances)) continue;
+		if (!itemInstances[item.itemInstanceId]) continue;
 		itemInstances[item.itemInstanceId].hash = item.itemHash;
-		itemInstances[item.itemInstanceId].manifest = manifestData.definitions[item.itemHash];
+		itemInstances[item.itemInstanceId].manifest = manifestData.data[item.itemHash];
 	}
 
 	// Overlaying hash from character inventories
@@ -121,7 +123,7 @@ export const GET = (async ({ fetch }) => {
 		for (const item of character.items) {
 			if (!(item.itemInstanceId in itemInstances)) continue;
 			itemInstances[item.itemInstanceId].hash = item.itemHash;
-			itemInstances[item.itemInstanceId].manifest = manifestData.definitions[item.itemHash];
+			itemInstances[item.itemInstanceId].manifest = manifestData.data[item.itemHash];
 		}
 	}
 
@@ -132,13 +134,13 @@ export const GET = (async ({ fetch }) => {
 		for (const item of character.items) {
 			if (!(item.itemInstanceId in itemInstances)) continue;
 			itemInstances[item.itemInstanceId].hash = item.itemHash;
-			itemInstances[item.itemInstanceId].manifest = manifestData.definitions[item.itemHash];
+			itemInstances[item.itemInstanceId].manifest = manifestData.data[item.itemHash];
 		}
 	}
 
 	// Map character name to ids
 	const charMap: Record<string, string[]> = {};
-	for (const char of characterData.characters) {
+	for (const char of characterData.data) {
 		if (charMap[char.class] === undefined) {
 			charMap[char.class] = [];
 		}
@@ -210,7 +212,7 @@ export const GET = (async ({ fetch }) => {
 		// Adding to respective item property
 		if (classType === undefined) {
 			weaponData[category].push({
-				definition: item.manifest as IItemManifestDefinition,
+				...(item.manifest as IItemManifest),
 				power: item.power
 			});
 		} else {
@@ -222,7 +224,7 @@ export const GET = (async ({ fetch }) => {
 					armorData[charId][category] = [];
 				}
 				armorData[charId][category].push({
-					definition: item.manifest as IItemManifestDefinition,
+					...(item.manifest as IItemManifest),
 					power: item.power
 				});
 			}
@@ -272,12 +274,15 @@ export const GET = (async ({ fetch }) => {
 		};
 	}
 
-	const returnData: IPower = {
-		kinetic: weaponData.kinetic.sort(powerSorter)[0],
-		energy: weaponData.energy.sort(powerSorter)[0],
-		power: weaponData.power.sort(powerSorter)[0],
-		Armor: tempArmorData
+	const returnData: IResponse<IPower> = {
+		data: {
+			kinetic: weaponData.kinetic.sort(powerSorter)[0],
+			energy: weaponData.energy.sort(powerSorter)[0],
+			power: weaponData.power.sort(powerSorter)[0],
+			Armor: tempArmorData
+		},
+		status: 'ok',
+		message: ''
 	};
-
 	return json(returnData);
 }) satisfies RequestHandler;

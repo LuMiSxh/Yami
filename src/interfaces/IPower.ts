@@ -1,4 +1,4 @@
-import type IItem from '@interfaces/IItem';
+import type IItem from '$interfaces/extensions/IItem';
 
 interface IPower {
 	kinetic: IItem;

@@ -1,9 +1,10 @@
 import type { RequestHandler } from '@sveltejs/kit';
-import { addSecondsToDate } from '@lib/utils';
+import { addSecondsToDate } from '$lib/utils';
 import { error, json, redirect } from '@sveltejs/kit';
-import type ISession from '@interfaces/ISession';
+import type ISession from '$interfaces/ISession';
 import { SECRET_API_KEY, SECRET_CLIENT_ID, SECRET_CLIENT_SECRET } from '$env/static/private';
 import { PUBLIC_API_ROOT, PUBLIC_PATH } from '$env/static/public';
+import type IResponse from '$interfaces/IResponse';
 
 export const GET = (async ({ cookies, fetch }) => {
 	// Variable declaration
@@ -47,19 +48,23 @@ export const GET = (async ({ cookies, fetch }) => {
 	const accessData = await accessRequest.json();
 
 	// Build new return data
-	const returnData: ISession = {
-		...session,
-		access: {
-			token: accessData.access_token,
-			expirationDate: addSecondsToDate(new Date(), accessData.expires_in)
+	const returnData: IResponse<ISession> = {
+		data: {
+			...session,
+			access: {
+				token: accessData.access_token,
+				expirationDate: addSecondsToDate(new Date(), accessData.expires_in)
+			},
+			refresh: {
+				token: accessData.refresh_token,
+				expirationDate: addSecondsToDate(new Date(), accessData.refresh_expires_in)
+			}
 		},
-		refresh: {
-			token: accessData.refresh_token,
-			expirationDate: addSecondsToDate(new Date(), accessData.refresh_expires_in)
-		}
+		status: 'ok',
+		message: ''
 	};
 
-	cookies.set('Session', JSON.stringify(returnData), {
+	cookies.set('Session', JSON.stringify(returnData.data), {
 		path: '/',
 		httpOnly: true,
 		maxAge: accessData.refresh_expires_in

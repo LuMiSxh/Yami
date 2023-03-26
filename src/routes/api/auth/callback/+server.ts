@@ -1,8 +1,9 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { error, redirect } from '@sveltejs/kit';
-import { addSecondsToDate } from '@lib/utils';
-import type ISession from '@interfaces/ISession';
+import { addSecondsToDate } from '$lib/utils';
+import type ISession from '$interfaces/ISession';
 import { SECRET_API_KEY, SECRET_CLIENT_ID, SECRET_CLIENT_SECRET } from '$env/static/private';
+import { PUBLIC_PATH } from '$env/static/public';
 
 export const GET = (async ({ url, cookies, fetch }) => {
 	// Variable declaration
@@ -104,5 +105,13 @@ export const GET = (async ({ url, cookies, fetch }) => {
 		maxAge: accessData.refresh_expires_in
 	});
 
-	throw redirect(303, '/authorized');
+	// Redirect url
+	const redirectUrl = new URL(`${PUBLIC_PATH}/`);
+	redirectUrl.searchParams.set('type', 'inf');
+	redirectUrl.searchParams.set(
+		'message',
+		'Authentication was successful. You can now go back to the page you were looking for'
+	);
+
+	throw redirect(303, redirectUrl.toString());
 }) satisfies RequestHandler;

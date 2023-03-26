@@ -1,8 +1,4 @@
-interface ICharacters {
-	characters: ICharacter[];
-}
-
-export interface ICharacter {
+interface ICharacter {
 	id: string;
 	class: 'Titan' | 'Hunter' | 'Warlock';
 	emblem: {
@@ -12,4 +8,4 @@ export interface ICharacter {
 	};
 }
 
-export default ICharacters;
+export default ICharacter;

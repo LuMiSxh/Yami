@@ -1,22 +1,29 @@
 <script>
 	import { page } from '$app/stores';
+	import { Column, Grid, Row } from 'carbon-components-svelte';
 </script>
 
-<main class="h-full w-full p-5 flex flex-col justify-center items-center text-center">
-	<aside class="alert variant-ghost-error md:w-1/3 xl:h-1/3 md:3/4 w-1/2 h-1/2">
-		<div class="alert-message">
-			<h1>{$page.status}</h1>
+<Grid>
+	<Row>
+		<Column>
+			<h1 style="color: #0f62fe; font-weight: bold">
+				I'm sorry but something went wrong: {$page.status}
+			</h1>
+		</Column>
+	</Row>
+	<Row padding>
+		<Column>
 			{#if $page.error.message}
-				<p>{$page.error.message}</p>
-				{#if $page.error.errorId}
-					<div class="lg:pt-7 pt-3">
-						<h3>Error code:</h3>
-						<pre>{$page.error.errorId}</pre>
-					</div>
-				{/if}
+				<h3>{$page.error.message}</h3>
 			{:else}
-				<p>An unknown error occurred</p>
+				<h3>No error information available</h3>
 			{/if}
-		</div>
-	</aside>
-</main>
+		</Column>
+		{#if $page.error.errorId}
+			<Column>
+				<h3>Error code:</h3>
+				<pre>{$page.error.errorId}</pre>
+			</Column>
+		{/if}
+	</Row>
+</Grid>

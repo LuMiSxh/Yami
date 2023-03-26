@@ -1,4 +1,4 @@
-import type IItem from '@interfaces/IItem';
+import type IItem from '$interfaces/extensions/IItem';
 
 export function addSecondsToDate(date: Date, seconds: number): Date {
 	date.setTime(date.getTime() + seconds * 1000);
@@ -12,4 +12,8 @@ export function powerSorter(a: IItem, b: IItem): number {
 		return 1;
 	}
 	return 0;
+}
+
+export function asyncDelay(ms: number) {
+	return new Promise((resolve) => setTimeout(resolve, ms));
 }

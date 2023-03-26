@@ -1,10 +1,10 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { error, json } from '@sveltejs/kit';
-import type ICharacters from '@interfaces/ICharacters';
-import type { ICharacter } from '@interfaces/ICharacters';
-import type ISession from '@interfaces/ISession';
+import type ICharacter from '$interfaces/destiny/ICharacter';
+import type ISession from '$interfaces/ISession';
 import { SECRET_API_KEY } from '$env/static/private';
 import { PUBLIC_API_ROOT, PUBLIC_PATH } from '$env/static/public';
+import type IResponse from '$interfaces/IResponse';
 
 export const GET = (async ({ fetch }) => {
 	// Fetch session
@@ -17,9 +17,8 @@ export const GET = (async ({ fetch }) => {
 			errorId: sessionError.errorId
 		});
 	}
-
 	// Extract data
-	const session = (await sessionRequest.json()) as ISession;
+	const session = (await sessionRequest.json()).data as ISession;
 
 	// Fetch characters
 	const charactersRequest = await fetch(
@@ -45,8 +44,10 @@ export const GET = (async ({ fetch }) => {
 	refresh.setDate(refresh.getDate() + 1);
 
 	// Create Data and iterate characters
-	const returnData: ICharacters = {
-		characters: []
+	const characters: IResponse<ICharacter[]> = {
+		data: [],
+		status: 'ok',
+		message: ''
 	};
 
 	for (const char of Object.values<{
@@ -79,8 +80,8 @@ export const GET = (async ({ fetch }) => {
 				color: [char.emblemColor.red, char.emblemColor.green, char.emblemColor.blue]
 			}
 		};
-		returnData.characters.push(character);
+		characters.data.push(character);
 	}
 
-	return json(returnData);
+	return json(characters);
 }) satisfies RequestHandler;
