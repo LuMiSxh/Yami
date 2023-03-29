@@ -139,34 +139,24 @@
 			<Column padding>
 				<p style="font-weight: bold; color: #0f62fe">{weapon.type}</p>
 				<h2>{weapon.data.power}</h2>
-				<ImageLoader
+				<img
+					alt=""
 					src={weapon.data.displayProperties.icon}
 					style="min-width: 48px; min-height: 48px; width: 96px; height: 96px; aspect-ratio: 1/1;"
-				>
-					<svelte:fragment slot="loading">
-						<SkeletonPlaceholder
-							style="min-width: 48px; min-height: 48px; width: 96px; height: 96px; aspect-ratio: 1/1;"
-						/>
-					</svelte:fragment>
-				</ImageLoader>
+				/>
 			</Column>
 		{/each}
 	</Row>
 	<Row padding>
-		{#each armor as armorPiece}
+		{#each armor as armorPiece, i}
 			<Column style="margin-top: 1rem; margin-bottom: 1rem;">
 				<p style="font-weight: bold; color: #0f62fe">{armorPiece.type}</p>
 				<h2>{armorPiece.data.power}</h2>
-				<ImageLoader
+				<img
+					alt=""
 					src={armorPiece.data.displayProperties.icon}
 					style="min-width: 48px; min-height: 48px; width: 96px; height: 96px; aspect-ratio: 1/1;"
-				>
-					<svelte:fragment slot="loading">
-						<SkeletonPlaceholder
-							style="min-width: 48px; min-height: 48px; width: 96px; height: 96px; aspect-ratio: 1/1;"
-						/>
-					</svelte:fragment>
-				</ImageLoader>
+				/>
 			</Column>
 		{/each}
 	</Row>
