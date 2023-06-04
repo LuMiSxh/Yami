@@ -139,11 +139,23 @@
 			<Column padding>
 				<p style="font-weight: bold; color: #0f62fe">{weapon.type}</p>
 				<h2>{weapon.data.power}</h2>
-				<img
-					alt=""
-					src={weapon.data.displayProperties.icon}
-					style="min-width: 48px; min-height: 48px; width: 96px; height: 96px; aspect-ratio: 1/1;"
-				/>
+				<div
+					style="position: relative; min-width: 48px; min-height: 48px; width: 96px; height: 96px;"
+				>
+					<SkeletonPlaceholder
+						style="min-width: 48px; min-height: 48px; width: 96px; height: 96px; aspect-ratio: 1/1; position: absolute; top: 0; left: 0;"
+					/>
+					<img
+						alt=""
+						src={weapon.data.displayProperties.icon}
+						style="min-width: 48px; min-height: 48px; width: 96px; height: 96px; aspect-ratio: 1/1; position: absolute; top: 0; left: 0;"
+					/>
+					<img
+						alt=""
+						src={weapon.data.displayProperties.watermark}
+						style="min-width: 48px; min-height: 48px; width: 96px; height: 96px; aspect-ratio: 1/1; position: absolute; top: 0; left: 0;"
+					/>
+				</div>
 			</Column>
 		{/each}
 	</Row>
@@ -152,11 +164,23 @@
 			<Column style="margin-top: 1rem; margin-bottom: 1rem;">
 				<p style="font-weight: bold; color: #0f62fe">{armorPiece.type}</p>
 				<h2>{armorPiece.data.power}</h2>
-				<img
-					alt=""
-					src={armorPiece.data.displayProperties.icon}
-					style="min-width: 48px; min-height: 48px; width: 96px; height: 96px; aspect-ratio: 1/1;"
-				/>
+				<div
+					style="position: relative; min-width: 48px; min-height: 48px; width: 96px; height: 96px;"
+				>
+					<SkeletonPlaceholder
+						style="min-width: 48px; min-height: 48px; width: 96px; height: 96px; aspect-ratio: 1/1; position: absolute; top: 0; left: 0;"
+					/>
+					<img
+						alt=""
+						src={armorPiece.data.displayProperties.icon}
+						style="min-width: 48px; min-height: 48px; width: 96px; height: 96px; aspect-ratio: 1/1; position: absolute; top: 0; left: 0;"
+					/>
+					<img
+						alt=""
+						src={armorPiece.data.displayProperties.watermark}
+						style="min-width: 48px; min-height: 48px; width: 96px; height: 96px; aspect-ratio: 1/1; position: absolute; top: 0; left: 0;"
+					/>
+				</div>
 			</Column>
 		{/each}
 	</Row>

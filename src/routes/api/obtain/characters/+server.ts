@@ -74,6 +74,7 @@ export const GET = (async ({ fetch }) => {
 		const character: ICharacter = {
 			id: char.characterId,
 			class: className,
+			classId: char.classType as 0 | 1 | 2,
 			emblem: {
 				icon: 'https://bungie.net' + char.emblemPath,
 				background: 'https://bungie.net' + char.emblemBackgroundPath,

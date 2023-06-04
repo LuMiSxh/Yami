@@ -66,20 +66,31 @@ export const GET = (async ({ url }) => {
 	if (manifestType === 'DestinyInventoryItemLiteDefinition') {
 		const cleanManifest: Record<string, IItemManifest> = {};
 
-		for (const [item_hash, obj] of Object.entries<IItemManifest>(manifestData)) {
+		for (const [item_hash, obj] of Object.entries<
+			IItemManifest & { iconWatermark: string | undefined }
+		>(manifestData)) {
 			const temp_data: IItemManifest = {
 				displayProperties: {
 					name: obj.displayProperties.name,
-					icon: 'https://bungie.net' + obj.displayProperties.icon ?? undefined
+					icon: obj.displayProperties.icon
+						? 'https://bungie.net' + obj.displayProperties.icon
+						: undefined,
+					watermark: obj.iconWatermark ? 'https://bungie.net' + obj.iconWatermark : undefined
 				},
 				itemTypeDisplayName: obj.itemTypeDisplayName,
 				itemCategoryHashes: obj.itemCategoryHashes,
-				classType: obj.classType
+				classType: obj.classType,
+				itemSubType: obj.itemSubType,
+				itemTypeAndTierDisplayName: obj.itemTypeAndTierDisplayName ?? undefined
 			};
 			if (obj.itemCategoryHashes) {
 				if (
+					// Weapons
 					[2, 3, 4].includes(obj.itemCategoryHashes['0'] as number) ||
-					[45, 46, 47, 48, 49].includes(obj.itemCategoryHashes['1'] as number)
+					// Armor
+					[45, 46, 47, 48, 49].includes(obj.itemCategoryHashes['1'] as number) ||
+					// Ornaments
+					[1742617626].includes(obj.itemCategoryHashes['4'] as number)
 				) {
 					cleanManifest[item_hash] = temp_data;
 				}
@@ -87,6 +98,7 @@ export const GET = (async ({ url }) => {
 		}
 
 		CACHE[manifestType] = { version: manifestVersion, data: cleanManifest };
+
 		const returnData: IResponse<Record<string, IItemManifest>> = {
 			data: cleanManifest,
 			status: 'ok',

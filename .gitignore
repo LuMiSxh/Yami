@@ -23,6 +23,7 @@ vite.config.ts.timestamp-*
 .DS_Store
 *.pem
 .idea
+.fleet
 
 # rust
 target

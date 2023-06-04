@@ -43,7 +43,7 @@ export const GET = (async ({ fetch }) => {
 	const charactersRequest = await fetch(`${PUBLIC_PATH}/api/obtain/characters`);
 	// Check charactersRequest
 	if (charactersRequest.status !== 200) {
-		const characterError = await manifestRequest.json();
+		const characterError = await charactersRequest.json();
 		throw error(500, {
 			message: characterError.message,
 			errorId: characterError.errorId
@@ -64,7 +64,6 @@ export const GET = (async ({ fetch }) => {
 	);
 	// Check profileItemsRequest
 	if (profileItemsRequest.status !== 200) {
-		console.log(await profileItemsRequest.text());
 		throw error(500, {
 			message: `Something went wrong obtaining the items from your Destiny 2 profile: '${profileItemsRequest.statusText}'`,
 			errorId: crypto.randomUUID()
@@ -209,7 +208,7 @@ export const GET = (async ({ fetch }) => {
 			}
 		}
 
-		// Adding to respective item property
+		// Adding to the respective item property
 		if (classType === undefined) {
 			weaponData[category].push({
 				...(item.manifest as IItemManifest),

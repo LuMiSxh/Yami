@@ -25,6 +25,11 @@
 			Name: 'Optimizer',
 			Route: '/guard/optimizer',
 			Active: $page.url.pathname === '/guard/optimizer'
+		},
+		{
+			Name: 'Ornament Lookup',
+			Route: '/guard/ornaments',
+			Active: $page.url.pathname === '/guard/ornaments'
 		}
 	];
 
