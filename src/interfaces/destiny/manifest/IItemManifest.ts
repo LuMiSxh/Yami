@@ -1,6 +1,7 @@
 interface IItemManifest {
 	displayProperties: {
 		name: string;
+		description: string;
 		icon: string | undefined;
 		watermark: string | undefined;
 	};

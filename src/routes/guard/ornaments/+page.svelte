@@ -167,7 +167,18 @@
 								style="min-width: 48px; min-height: 48px; width: 96px; height: 96px; aspect-ratio: 1/1; position: absolute; top: 0; left: 0;"
 							/>
 						</div>
-						<Tag slot="text" type="high-contrast"><h5>{obItem.displayProperties.name}</h5></Tag>
+						<svelte:fragment slot="text">
+							<Tag type="high-contrast"><h5>{obItem.displayProperties.name}<br/><span style="font-weight: bold; color: #0f62fe;">{obItem.displayProperties.description
+								.replace('Equip this ornament to change the appearance of ', '')
+								.replace(
+									". Once you get an ornament, it's unlocked for all characters on your account.",
+									''
+								)
+								.replace(". Once you get an ornament, it's unlocked on all characters on your account.", "")
+							.replace("Equip this armor ornament to change the appearance of ", "")
+							.replace(".", "")
+							}</span></h5></Tag>
+						</svelte:fragment>
 					</Tooltip>
 				</Column>
 			{/each}
@@ -195,7 +206,18 @@
 								style="min-width: 48px; min-height: 48px; width: 96px; height: 96px; aspect-ratio: 1/1; position: absolute; top: 0; left: 0; background: #00000040;"
 							/>
 						</div>
-						<Tag slot="text" type="high-contrast"><h5>{ubItem.displayProperties.name}</h5></Tag>
+						<svelte:fragment slot="text">
+							<Tag type="high-contrast"><h5>{ubItem.displayProperties.name}<br/><span style="font-weight: bold; color: #0f62fe;">{ubItem.displayProperties.description
+								.replace('Equip this ornament to change the appearance of ', '')
+								.replace(
+									". Once you get an ornament, it's unlocked for all characters on your account.",
+									''
+								)
+								.replace(". Once you get an ornament, it's unlocked on all characters on your account.", "")
+								.replace("Equip this armor ornament to change the appearance of ", "")
+								.replace(".", "")
+							}</span></h5></Tag>
+						</svelte:fragment>
 					</Tooltip>
 				</Column>
 			{/each}

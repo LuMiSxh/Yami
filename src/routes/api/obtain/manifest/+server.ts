@@ -72,6 +72,7 @@ export const GET = (async ({ url }) => {
 			const temp_data: IItemManifest = {
 				displayProperties: {
 					name: obj.displayProperties.name,
+					description: obj.displayProperties.description,
 					icon: obj.displayProperties.icon
 						? 'https://bungie.net' + obj.displayProperties.icon
 						: undefined,
